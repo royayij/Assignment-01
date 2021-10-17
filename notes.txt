@@ -4,13 +4,17 @@ docker run -d -p 5000:5000 --name=dbAPI training-db
 
 ##In preprocessing folder
 docker build -t preprocess-db .
-docker run -p 5001:5000 -e TRAININGDB_API=http://dbAPI:5000/training-db/train_db -e TESTDB_API=http://dbAPI:5000/training-db/test_db -d --name=preprocessAPI preprocess-db
+sudo docker run -p 5001:5000 -e TRAININGDB_API=http://dbAPI:5000/training-db/train_db -e TESTDB_API=http://dbAPI:5000/training-db/test_db -d --name=preprocessAPI preprocessdb:0.0.3
 
 ##In training-cp-gcp (model_repo_assignment should be changed for different bucket, also needs to be changed in the Dockerfile)s
 docker build -t train-db .
 docker run -p 5002:5000 -v model_repo_assignment_1 -e PREPROCESSDB_API=http://preprocessAPI:5000/preprocessing/train_db -d --name=trainAPI train-db
 
+sudo docker build -t prediction:0.0.3 .
+sudo docker run -p 5003:5000 -e PREPROCESSDB_API=http://preprocessAPI:5000/preprocessing/test_db -v model_repo_assignment_1 -d --name=predictAPI prediction:0.0.3
+
 docker network create mynet
-docker network connect mynet dbAPI
-docker network connect mynet preprocessAPI
-docker network connect mynet trainAPI
+sudo docker network connect mynet dbAPI
+sudo docker network connect mynet preprocessAPI
+sudo docker network connect mynet trainAPI
+sudo docker network connect mynet predictAPI
